@@ -1,0 +1,11 @@
+build/
+logs/
+.idea/
+.gradle/
+.DS_Store
+*.iws
+*.iml
+*.ipr
+*.txt
+.quest
+test-report.xml
