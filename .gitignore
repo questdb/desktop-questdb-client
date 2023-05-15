@@ -7,5 +7,5 @@ logs/
 *.iml
 *.ipr
 *.txt
-.quest
+logs
 test-report.xml

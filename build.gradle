@@ -23,7 +23,7 @@ plugins {
     // https://plugins.gradle.org/plugin/net.nemerosa.versioning
 }
 
-group = 'io.quest'
+group = 'io.questdb.desktop'
 version = '1.0.0'
 description = 'Desktop user interface to QuestDB through the Postgres Wire Protocol.'
 
@@ -50,14 +50,14 @@ dependencies {
 }
 
 application {
-    mainClass = 'io.quest.Quest'
+    mainClass = 'io.questdb.desktop.Main'
     applicationDefaultJvmArgs = ['-Xmx3G', '-server', '-Dfile.encoding=UTF-8']
 }
 
 jar {
     manifest {
         attributes(
-                'Main-Class': 'io.quest.Quest',
+                'Main-Class': 'io.questdb.desktop.Main',
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Build-Branch': versioning.info.branch,
                 'Build-Revision': versioning.info.commit,
@@ -73,7 +73,7 @@ distributions.main {
 }
 
 startScripts {
-    startScripts.applicationName = 'quest'
+    startScripts.applicationName = 'start-client'
     doLast {
         def windowsScriptFile = file getWindowsScript()
         def unixScriptFile = file getUnixScript()

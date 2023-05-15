@@ -1,10 +1,10 @@
 # Desktop QuestDB Client
 
-Quest is a desktop user interface to common 
+This is a desktop user interface to common 
 `postgress wire protocol`-compatible databases such as:
 
-- [**QuestDB**](https://github.com/questdb/questdb)
-- [**Postgres**](https://github.com/postgres/postgres)
+- [**QuestDB**](https://github.com/questdb/questdb/)
+- [**Postgres**](https://github.com/postgres/postgres/)
 
 ## Build commands
 
@@ -22,7 +22,6 @@ Quest is a desktop user interface to common
 After the **build** command completes, you will find a zip file in `build/distributions/`:
 
 - `cd build/distributions`
-- `unzip quest-*.zip`
-- `cd quest-<version>`
-- `bin/quest` (or `bin\quest.bat` in windows)
- 
+- `unzip desktop-questdb-client-*.zip`
+- `cd desktop-questdb-client-<version>`
+- `bin/start-client` (or `bin\start-client.bat` in windows)
