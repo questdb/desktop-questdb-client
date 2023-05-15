@@ -1,4 +1,4 @@
-# quest
+# Desktop QuestDB Client
 
 Quest is a desktop user interface to common 
 `postgress wire protocol`-compatible databases such as:
