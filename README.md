@@ -1,21 +1,20 @@
 # Desktop QuestDB Client
 
-This is a desktop user interface to common 
-`postgress wire protocol`-compatible databases such as:
+This is a desktop user interface to common `postgress wire protocol`-compatible databases such as:
 
 - [**QuestDB**](https://github.com/questdb/questdb/)
 - [**Postgres**](https://github.com/postgres/postgres/)
+
+## Run commands
+
+- windows: `gradlew.bat run`
+- mac/linux: `./gradlew run`
 
 ## Build commands
 
 - <your system's gradle command> wrapper: regenerates the gradle scaffolding,
   *eg.* `gradle wrapper`, so that then you can use the subsequent commands.
 - **build**: `./gradlew clean build`
-
-## Run commands
-
-- windows: `gradlew.bat run`
-- mac/linux: `./gradlew run`
 
 ## Installation
 
