@@ -191,7 +191,7 @@ public class Metadata extends JDialog implements EventProducer<Metadata.EventTyp
         metaReader.load(selectedPath);
         display.clear();
         display.addLn("tableId: ", metaReader.getTableId());
-        display.addLn("structureVersion: ", metaReader.getStructureVersion());
+        display.addLn("metadataVersion: ", metaReader.getMetadataVersion());
         display.addLn("timestampIndex: ", metaReader.getTimestampIndex());
         display.addLn("partitionBy: ", PartitionBy.toString(metaReader.getPartitionBy()));
         display.addLn("maxUncommittedRows: ", metaReader.getMaxUncommittedRows());
@@ -248,7 +248,7 @@ public class Metadata extends JDialog implements EventProducer<Metadata.EventTyp
             display.addLn("version: ", txReader.getVersion());
             display.addLn("columnVersion: ", txReader.getColumnVersion());
             display.addLn("dataVersion: ", txReader.getDataVersion());
-            display.addLn("structureVersion: ", txReader.getStructureVersion());
+            display.addLn("metadataVersion: ", txReader.getMetadataVersion());
             display.addLn("truncateVersion: ", txReader.getTruncateVersion());
             display.addLn("partitionTableVersion: ", txReader.getPartitionTableVersion());
             display.addLn();
@@ -269,7 +269,7 @@ public class Metadata extends JDialog implements EventProducer<Metadata.EventTyp
             for (int i = 0; i < partitionCount; i++) {
                 display.addPartitionLn(
                         i,
-                        txReader.getPartitionTimestamp(i),
+                        txReader.getPartitionTimestampByIndex(i),
                         txReader.getPartitionNameTxn(i),
                         txReader.getPartitionSize(i),
                         txReader.getPartitionColumnVersion(i));
@@ -391,8 +391,7 @@ public class Metadata extends JDialog implements EventProducer<Metadata.EventTyp
                     auxPath,
                     cnTxn.columnName,
                     cnTxn.columnNameTxn,
-                    columnTop,
-                    -1L
+                    columnTop
             )) {
                 display.clear();
                 if (symReader.containsNullValue()) {
