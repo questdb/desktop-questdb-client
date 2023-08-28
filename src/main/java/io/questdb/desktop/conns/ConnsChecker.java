@@ -59,7 +59,7 @@ import io.questdb.log.LogFactory;
  * @see Conn#isValid()
  */
 public class ConnsChecker implements Closeable {
-    private static final int PERIOD_SECS = 30; // validity period
+    private static final int PERIOD_SECS = 300; // validity period
     private static final int NUM_THREADS = 2;
     private static final Log LOG = LogFactory.getLog(ConnsChecker.class);
 

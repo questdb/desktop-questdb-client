@@ -116,6 +116,8 @@ public class ConnAttrs extends StoreEntry {
         // Setting these will necessitate storing the server certificate on the
         // client machine see "Configuring the client" for details.
         props.setProperty("sslmode", "prefer");
+        //props.setProperty("sslmode", "require"); // TLS
+        //props.setProperty("binaryTransfer", "true"); // TLS
 
         // Sets SO_RCVBUF on the connection stream
         props.put("receiveBufferSize", 8 * 1024 * 1024);
