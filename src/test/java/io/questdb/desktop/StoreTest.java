@@ -29,10 +29,10 @@ import static org.hamcrest.Matchers.is;
 
 import java.io.File;
 
-import io.questdb.desktop.conns.ConnAttrs;
-import io.questdb.desktop.store.Store;
-import io.questdb.desktop.store.StoreEntry;
-import io.questdb.desktop.editor.QuestsEditor;
+import io.questdb.desktop.model.DbConnProperties;
+import io.questdb.desktop.model.Store;
+import io.questdb.desktop.model.StoreEntry;
+import io.questdb.desktop.ui.editor.QuestsEditor;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -54,17 +54,17 @@ public class StoreTest {
     public void test_persist_load_DBConnection() {
         String fileName = deleteIfExists("test-db-connection-persistence.json");
         try {
-            ConnAttrs conn = new ConnAttrs("master-node-0");
+            DbConnProperties conn = new DbConnProperties("master-node-0");
             conn.setAttr("host", "prometheus");
             conn.setAttr("port", "5433");
             conn.setAttr("username", "root");
             conn.setAttr("password", "secret password");
-            try (Store<ConnAttrs> store = new TStore<>(fileName, ConnAttrs.class)) {
+            try (Store<DbConnProperties> store = new TStore<>(fileName, DbConnProperties.class)) {
                 store.addEntry(conn);
             }
 
-            ConnAttrs pConn;
-            try (Store<ConnAttrs> store = new TStore<>(fileName, ConnAttrs.class)) {
+            DbConnProperties pConn;
+            try (Store<DbConnProperties> store = new TStore<>(fileName, DbConnProperties.class)) {
                 store.loadFromFile();
                 assertThat(store.size(), is(1));
                 pConn = store.entries().get(0);

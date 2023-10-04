@@ -32,20 +32,21 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-import io.questdb.desktop.conns.Conn;
-import io.questdb.desktop.sql.SQLExecutor;
-import io.questdb.desktop.sql.SQLExecutionRequest;
-import io.questdb.desktop.sql.SQLExecutionResponse;
-import io.questdb.desktop.metadata.Metadata;
-import io.questdb.desktop.plot.Plot;
-import io.questdb.desktop.plot.TableColumn;
-import io.questdb.desktop.results.SQLPagedTableModel;
-import io.questdb.desktop.sql.SQLType;
-import io.questdb.desktop.store.Store;
+import io.questdb.desktop.model.DbConn;
+import io.questdb.desktop.model.SQLExecutor;
+import io.questdb.desktop.model.SQLExecutionRequest;
+import io.questdb.desktop.model.SQLExecutionResponse;
+import io.questdb.desktop.ui.metadata.Metadata;
+import io.questdb.desktop.ui.plotting.Plot;
+import io.questdb.desktop.ui.plotting.TableColumn;
+import io.questdb.desktop.model.SQLPagedTableModel;
+import io.questdb.desktop.model.SQLType;
+import io.questdb.desktop.model.Store;
 import io.questdb.ServerMain;
-import io.questdb.desktop.conns.Conns;
-import io.questdb.desktop.editor.QuestsEditor;
-import io.questdb.desktop.results.SQLResultsTable;
+import io.questdb.desktop.ui.connectivity.Conns;
+import io.questdb.desktop.ui.editor.QuestsEditor;
+import io.questdb.desktop.ui.EventProducer;
+import io.questdb.desktop.ui.results.SQLResultsTable;
 import io.questdb.log.Log;
 import io.questdb.log.LogFactory;
 import io.questdb.std.Misc;
@@ -151,7 +152,7 @@ public final class Main {
     }
 
     private void onToggleAssignedConn(ActionEvent event) {
-        Conn conn = commands.getConnection();
+        DbConn conn = commands.getConnection();
         conns.onConnectEvent(conn);
         toggleAssignedConn.setText(conn != null && conn.isOpen() ? "Connect" : "Disconnect");
     }
@@ -191,7 +192,7 @@ public final class Main {
             }
             plot.setDataSet(
                 new TableColumn("x", table, 1, Color.WHITE),
-                new TableColumn("y", table, 2, GTk.EDITOR_MATCH_FOREGROUND_COLOR)
+                new TableColumn("y", table, 2, GTk.Editor.MATCH_FOREGROUND_COLOR)
             );
             plot.setVisible(true);
             togglePlot.setText("Close Plot");
@@ -204,7 +205,7 @@ public final class Main {
                 questDb = new ServerMain("-d", Store.ROOT_PATH.getAbsolutePath());
                 questDb.start(false);
                 toggleQuestDB.setText("Shutdown QuestDB");
-                Conn conn = commands.getConnection();
+                DbConn conn = commands.getConnection();
                 if (conn == null || !conn.isValid()) {
                     onToggleAssignedConn(null);
                 }
@@ -246,7 +247,7 @@ public final class Main {
     private void onCommandEvent(QuestsEditor.EventType event, SQLExecutionRequest req) {
         switch (event) {
             case COMMAND_AVAILABLE -> {
-                Conn conn = commands.getConnection();
+                DbConn conn = commands.getConnection();
                 if (conn == null || !conn.isValid()) {
                     onToggleAssignedConn(null);
                 }
@@ -291,24 +292,24 @@ public final class Main {
     private void onConnsEvent(Conns.EventType event, Object data) {
         switch (event) {
             case CONNECTION_SELECTED -> {
-                commands.setConnection((Conn) data);
+                commands.setConnection((DbConn) data);
                 if (conns.isVisible()) {
                     onToggleConns(null);
                 }
             }
             case CONNECTION_ESTABLISHED, CONNECTION_CLOSED -> {
-                Conn conn = (Conn) data;
-                Conn current = commands.getConnection();
+                DbConn conn = (DbConn) data;
+                DbConn current = commands.getConnection();
                 if (current != null && current.equals(conn)) {
                     commands.setConnection(conn);
                     toggleAssignedConn.setText(conn.isOpen() ? "Disconnect" : "Connect");
                 }
             }
             case CONNECTIONS_LOST -> {
-                @SuppressWarnings("unchecked") Set<Conn> droppedConns = (Set<Conn>) data;
-                Conn current = commands.getConnection();
+                @SuppressWarnings("unchecked") Set<DbConn> droppedConns = (Set<DbConn>) data;
+                DbConn current = commands.getConnection();
                 if (current != null) {
-                    for (Conn dc : droppedConns) {
+                    for (DbConn dc : droppedConns) {
                         if (current.equals(dc)) {
                             commands.setConnection(dc);
                         }

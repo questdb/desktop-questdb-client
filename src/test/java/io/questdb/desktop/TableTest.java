@@ -36,8 +36,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import io.questdb.desktop.sql.Row;
-import io.questdb.desktop.sql.Table;
+import io.questdb.desktop.model.Row;
+import io.questdb.desktop.model.Table;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -24,7 +24,7 @@
 
 package io.questdb.desktop;
 
-import io.questdb.desktop.conns.Conn;
+import io.questdb.desktop.model.DbConn;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +34,7 @@ import java.sql.Timestamp;
 
 public class ConnectWithQuestDB {
     public static void main(String... args) throws Exception {
-        try (Conn conn = new Conn("QuestDB")) {
+        try (DbConn conn = new DbConn("QuestDB")) {
             Connection connection = conn.open();
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS testing(test TIMESTAMP) TIMESTAMP(test);").execute();
             // Insert timestamp

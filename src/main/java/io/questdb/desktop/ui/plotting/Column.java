@@ -22,38 +22,27 @@
  *
  ******************************************************************************/
 
-package io.questdb.desktop.plot;
+package io.questdb.desktop.ui.plotting;
 
 import io.questdb.desktop.GTk;
-import io.questdb.desktop.ui.plotting.BasicColumn;
-import io.questdb.desktop.ui.plotting.Column;
-import io.questdb.desktop.ui.plotting.PlotCanvas;
 
-import javax.swing.*;
 import java.awt.*;
 
+public interface Column {
 
-public class PlotDemo extends JPanel {
+    void append(double value);
 
-    public static void main(String[] args) {
-        PlotCanvas plot = new PlotCanvas();
+    double get(int i);
 
-        Column xValues = new BasicColumn("x");
-        Column yValues = new BasicColumn("y", Color.YELLOW);
-        double angle = 0.0;
-        double step = Math.PI / 180.0;
-        for (int i = 0; i <= 360; i++) {
-            xValues.append(Math.cos(angle));
-            yValues.append(Math.sin(angle));
-            angle += step;
-        }
-        plot.setDataSet("Circle in steps of π/4", xValues, yValues);
+    double min();
 
-        JFrame frame = GTk.frame("Plot");
-        Dimension size = GTk.frameDimension(7.0F, 7.0F);
-        frame.add(plot, BorderLayout.CENTER);
-        Dimension location = GTk.frameLocation(size);
-        frame.setLocation(location.width, location.height);
-        frame.setVisible(true);
+    double max();
+
+    int size();
+
+    String name();
+
+    default Color color() {
+        return GTk.Editor.KEYWORD_FOREGROUND_COLOR;
     }
 }

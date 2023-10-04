@@ -1,32 +1,10 @@
-/*******************************************************************************
- *     ___                  _   ____  ____
- *    / _ \ _   _  ___  ___| |_|  _ \| __ )
- *   | | | | | | |/ _ \/ __| __| | | |  _ \
- *   | |_| | |_| |  __/\__ \ |_| |_| | |_) |
- *    \__\_\\__,_|\___||___/\__|____/|____/
- *
- *  Copyright (c) 2014-2019 Appsicle
- *  Copyright (c) 2019-2023 QuestDB
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
-
 package io.questdb.desktop;
 
-import io.questdb.desktop.sql.Table;
+import io.questdb.desktop.model.Table;
+import io.questdb.desktop.ui.NoopMouseListener;
 import io.questdb.log.Log;
 import io.questdb.log.LogFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -106,30 +84,13 @@ public final class GTk {
     public static final String APP_NAME = "Q.U.E.S.T.D.B";
     public static final String MAIN_FONT_NAME = "Monospaced";
     public static final Color APP_BACKGROUND_COLOR = new Color(0, 0, 0);
-    public static final Color EDITOR_ERROR_FOREGROUND_COLOR = new Color(255, 55, 5);
-    public static final Color EDITOR_MENU_FOREGROUND_COLOR = new Color(15, 205, 150);
-    public static final Color EDITOR_NORMAL_FOREGROUND_COLOR = new Color(180, 255, 210);
-    public static final Color EDITOR_KEYWORD_FOREGROUND_COLOR = new Color(15, 255, 150);
-    public static final Color EDITOR_FUNCTION_FOREGROUND_COLOR = new Color(0, 255, 4, 92);
-    public static final Color EDITOR_TYPE_FOREGROUND_COLOR = new Color(243, 156, 18);
-    public static final Color EDITOR_LINENO_COLOR = Color.LIGHT_GRAY.darker().darker();
-    public static final Color EDITOR_MATCH_FOREGROUND_COLOR = new Color(250, 255, 116);
-    public static final Color EDITOR_PLOT_BORDER_COLOR = new Color(153, 153, 153);
-    public static final int EDITOR_DEFAULT_FONT_SIZE = 15;
-    public static final int EDITOR_MIN_FONT_SIZE = 11;
-    public static final int EDITOR_MAX_FONT_SIZE = 21;
     public static final int METADATA_EXPLORER_FONT_SIZE = 14;
     public static final Font MENU_FONT = new Font(MAIN_FONT_NAME, Font.BOLD, 14);
-    public static final int CMD_DOWN_MASK = isMac() ? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK;
-    public static final int CMD_SHIFT_DOWN_MASK = CMD_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
-    public static final int ALT_DOWN_MASK = InputEvent.ALT_DOWN_MASK;
-    public static final int ALT_SHIFT_DOWN_MASK = ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
-    public static final int NO_KEY_EVENT = -1;
-    public static final Font TABLE_HEADER_FONT = new Font(MAIN_FONT_NAME, Font.BOLD, EDITOR_DEFAULT_FONT_SIZE);
-    private static final Font TABLE_HEADER_UNDERLINE_FONT = TABLE_HEADER_FONT.deriveFont(Map.of(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON));
-    public static final Font TABLE_CELL_FONT = new Font(MAIN_FONT_NAME, Font.PLAIN, EDITOR_DEFAULT_FONT_SIZE);
-    private static final String EDITOR_FONT_NAME = "Monospaced";
-    public static final Font EDITOR_DEFAULT_FONT = new Font(EDITOR_FONT_NAME, Font.BOLD, EDITOR_DEFAULT_FONT_SIZE);
+    public static final Font TABLE_HEADER_FONT = new Font(MAIN_FONT_NAME, Font.BOLD, Editor.DEFAULT_FONT_SIZE);
+    private static final Font TABLE_HEADER_UNDERLINE_FONT = TABLE_HEADER_FONT.deriveFont(Map.of(
+            TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON
+    ));
+    public static final Font TABLE_CELL_FONT = new Font(MAIN_FONT_NAME, Font.PLAIN, Editor.DEFAULT_FONT_SIZE);
     private static final String DOCUMENTATION_URL = "https://questdb.io/docs/introduction/";
     private static final Log LOG = LogFactory.getLog(GTk.class);
     private static final Toolkit TK = Toolkit.getDefaultToolkit();
@@ -139,10 +100,7 @@ public final class GTk {
         // anti-aliased fonts
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
-    }
-
-    static {
-        final String lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
+        String lookAndFeel = UIManager.getCrossPlatformLookAndFeelClassName();
         try {
             UIManager.setLookAndFeel(lookAndFeel);
         } catch (Exception e) {
@@ -154,85 +112,17 @@ public final class GTk {
         throw new IllegalStateException("not meant to be instantiated");
     }
 
-    public static Font newEditorFontSize(int newFontSize) {
-        return new Font(EDITOR_FONT_NAME, Font.BOLD, newFontSize);
-    }
-
-    public static void addCmdKeyAction(int keyEvent, JComponent component, ActionListener action) {
-        Action cmd = action(action);
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyEvent, CMD_DOWN_MASK), cmd);
-        component.getActionMap().put(cmd, cmd);
-    }
-
-    public static void addCmdShiftKeyAction(int keyEvent, JComponent component, ActionListener action) {
-        Action cmd = action(action);
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyEvent, CMD_SHIFT_DOWN_MASK), cmd);
-        component.getActionMap().put(cmd, cmd);
-    }
-
-    public static void addAltKeyAction(int keyEvent, JComponent component, ActionListener action) {
-        Action cmd = action(action);
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyEvent, ALT_DOWN_MASK), cmd);
-        component.getActionMap().put(cmd, cmd);
-    }
-
-    public static void addAltShiftKeyAction(int keyEvent, JComponent component, ActionListener action) {
-        Action cmd = action(action);
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(keyEvent, ALT_SHIFT_DOWN_MASK), cmd);
-        component.getActionMap().put(cmd, cmd);
-    }
-
-    private static Action action(ActionListener action) {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                action.actionPerformed(e);
-            }
-        };
-    }
-
-    public static void setupTableCmdKeyActions(JTable table) {
-        addCmdKeyAction(KeyEvent.VK_A, table, e -> table.selectAll()); // cmd-a, select all
-        final StringBuilder sb = new StringBuilder();
-        addCmdKeyAction(KeyEvent.VK_C, table, e -> { // cmd-c, copy selection/all to clipboard
-            int[] selectedRows = table.getSelectedRows();
-            int[] selectedCols = table.getSelectedColumns();
-            if (selectedRows.length == 0) {
-                table.selectAll();
-                selectedRows = table.getSelectedRows();
-            }
-            int[] widths = new int[selectedCols.length];
-            for (int c = 0; c < selectedCols.length; c++) {
-                for (int r = 0; r < selectedRows.length; r++) {
-                    int len = table.getValueAt(r, c).toString().length();
-                    if (widths[c] < len) {
-                        widths[c] = len;
-                    }
-                }
-            }
-            sb.setLength(0);
-            int rowIdx;
-            int colIdx;
-            for (int selectedRow : selectedRows) {
-                rowIdx = selectedRow;
-                for (int c = 0; c < selectedCols.length; c++) {
-                    colIdx = selectedCols[c];
-                    if (!table.getColumnName(colIdx).equals(Table.ROWID_COL_NAME)) {
-                        String value = table.getValueAt(rowIdx, colIdx).toString();
-                        int len = value.length();
-                        sb.append(value);
-                        sb.append(" ".repeat(Math.max(0, widths[c] - len)));
-                        sb.append(", ");
-                    }
-                }
-                sb.setLength(sb.length() - 2);
-                sb.append("\n");
-            }
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1); // last \n
-                setClipboardContent(sb.toString());
-            }
-        });
+    public static void shutdownExecutor(ExecutorService executor) {
+        executor.shutdown();
+        try {
+            boolean completed;
+            int attempts = 2;
+            do {
+                completed = executor.awaitTermination(200L, TimeUnit.MILLISECONDS);
+            } while (!completed && attempts-- > 0);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public static void showErrorDialog(Component owner, String message) {
@@ -282,6 +172,7 @@ public final class GTk {
             }
 
             @Override
+            @NotNull
             public Object getTransferData(DataFlavor flavor) {
                 return isDataFlavorSupported(flavor) ? str : "";
             }
@@ -338,7 +229,7 @@ public final class GTk {
     }
 
     public static JButton button(String text, String tooltip, int width, int height, Color foregroundColor, ActionListener listener) {
-        JButton button = button(text, GTk.Icon.NO_ICON, tooltip, listener);
+        JButton button = button(text, Icon.NO_ICON, tooltip, listener);
         button.setPreferredSize(new Dimension(width, height));
         button.setForeground(foregroundColor);
         return button;
@@ -346,8 +237,8 @@ public final class GTk {
 
     private static JButton button(String text, Icon icon, String tooltip, ActionListener listener) {
         JButton button = new JButton(Objects.requireNonNull(text));
-        button.setFont(GTk.MENU_FONT);
-        button.setBackground(GTk.APP_BACKGROUND_COLOR);
+        button.setFont(MENU_FONT);
+        button.setBackground(APP_BACKGROUND_COLOR);
         button.setForeground(Color.WHITE);
         if (icon != Icon.NO_ICON) {
             button.setIcon(icon.icon());
@@ -364,10 +255,10 @@ public final class GTk {
         dialog.setModalityType(Dialog.ModalityType.MODELESS);
         dialog.setAlwaysOnTop(false);
         dialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        Dimension dimension = GTk.frameDimension(widthScale, heightScale);
+        Dimension dimension = frameDimension(widthScale, heightScale);
         dialog.setSize(dimension);
         dialog.setPreferredSize(dimension);
-        Dimension location = GTk.frameLocation(dimension);
+        Dimension location = frameLocation(dimension);
         dialog.setLocation(location.width, location.height);
         dialog.addWindowListener(new WindowAdapter() {
             @Override
@@ -378,7 +269,7 @@ public final class GTk {
     }
 
     public static JPanel flowPanel(JComponent... components) {
-        return flowPanel(null, GTk.APP_BACKGROUND_COLOR, 0, 0, components);
+        return flowPanel(null, APP_BACKGROUND_COLOR, 0, 0, components);
     }
 
     public static JPanel flowPanel(Border border, Color backgroundColor, int hgap, int vgap, JComponent... components) {
@@ -397,7 +288,7 @@ public final class GTk {
 
     public static JPanel gap(int hgap) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, hgap, 0));
-        panel.setBackground(GTk.APP_BACKGROUND_COLOR);
+        panel.setBackground(APP_BACKGROUND_COLOR);
         return panel;
     }
 
@@ -407,27 +298,27 @@ public final class GTk {
 
     public static JMenu menu(Icon icon, String title) {
         JMenu connsMenu = new JMenu(title);
-        connsMenu.setFont(GTk.MENU_FONT);
+        connsMenu.setFont(MENU_FONT);
         if (icon != Icon.NO_ICON) {
             connsMenu.setIcon(icon.icon());
         }
         return connsMenu;
     }
 
-    public static JMenuItem menuItem(GTk.Icon icon, String title, int keyEvent, ActionListener listener) {
+    public static JMenuItem menuItem(Icon icon, String title, int keyEvent, ActionListener listener) {
         return menuItem(new JMenuItem(), icon, title, null, keyEvent, listener);
     }
 
-    public static JMenuItem menuItem(GTk.Icon icon, String title, String tooltip, int keyEvent, ActionListener listener) {
+    public static JMenuItem menuItem(Icon icon, String title, String tooltip, int keyEvent, ActionListener listener) {
         return menuItem(new JMenuItem(), icon, title, tooltip, keyEvent, listener);
     }
 
-    public static JMenuItem menuItem(JMenuItem item, GTk.Icon icon, String title, int keyEvent, ActionListener listener) {
+    public static JMenuItem menuItem(JMenuItem item, Icon icon, String title, int keyEvent, ActionListener listener) {
         return menuItem(item, icon, title, null, keyEvent, listener);
     }
 
-    private static JMenuItem menuItem(JMenuItem item, GTk.Icon icon, String title, String tooltip, int keyEvent, ActionListener listener) {
-        if (icon != GTk.Icon.NO_ICON) {
+    private static JMenuItem menuItem(JMenuItem item, Icon icon, String title, String tooltip, int keyEvent, ActionListener listener) {
+        if (icon != Icon.NO_ICON) {
             item.setIcon(icon.icon());
         }
         item.setFont(MENU_FONT);
@@ -435,9 +326,9 @@ public final class GTk {
         if (tooltip != null) {
             item.setToolTipText(tooltip);
         }
-        if (keyEvent != NO_KEY_EVENT) {
+        if (keyEvent != Keyboard.NO_KEY_EVENT) {
             item.setMnemonic(keyEvent);
-            item.setAccelerator(KeyStroke.getKeyStroke(keyEvent, CMD_DOWN_MASK));
+            item.setAccelerator(KeyStroke.getKeyStroke(keyEvent, Keyboard.CMD_DOWN_MASK));
         }
         item.addActionListener(listener);
         return item;
@@ -445,16 +336,16 @@ public final class GTk {
 
     public static JLabel label(String text, Color foregroundColor) {
         JLabel label = label(Icon.NO_ICON, text, null);
-        label.setBackground(GTk.APP_BACKGROUND_COLOR);
+        label.setBackground(APP_BACKGROUND_COLOR);
         label.setForeground(foregroundColor);
         return label;
     }
 
-    public static JLabel label(GTk.Icon icon, String text, Consumer<MouseEvent> consumer) {
+    public static JLabel label(Icon icon, String text, Consumer<MouseEvent> consumer) {
         JLabel label = new JLabel();
-        label.setFont(GTk.TABLE_HEADER_FONT);
-        label.setBackground(GTk.APP_BACKGROUND_COLOR);
-        if (icon != GTk.Icon.NO_ICON) {
+        label.setFont(TABLE_HEADER_FONT);
+        label.setBackground(APP_BACKGROUND_COLOR);
+        if (icon != Icon.NO_ICON) {
             label.setIcon(icon.icon());
         }
         if (text != null) {
@@ -485,7 +376,17 @@ public final class GTk {
             } else if (os.contains("win")) {
                 rt.exec(String.format("rundll32 url.dll,FileProtocolHandler %s", DOCUMENTATION_URL));
             } else if (os.contains("nix") || os.contains("nux")) {
-                String[] browsers = {"google-chrome", "firefox", "mozilla", "epiphany", "konqueror", "netscape", "opera", "links", "lynx"};
+                String[] browsers = {
+                        "google-chrome",
+                        "firefox",
+                        "mozilla",
+                        "epiphany",
+                        "konqueror",
+                        "netscape",
+                        "opera",
+                        "links",
+                        "lynx"
+                };
                 StringBuilder cmd = new StringBuilder();
                 for (int i = 0; i < browsers.length; i++) {
                     if (i != 0) {
@@ -497,24 +398,15 @@ public final class GTk {
                 rt.exec(new String[]{"sh", "-c", cmd.toString()});
             }
         } catch (IOException err) {
-            JOptionPane.showMessageDialog(null, String.format("Failed to open browser [%s:%s]: %s", os, DOCUMENTATION_URL, err.getMessage()), "Helpless", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    null,
+                    String.format("Failed to open browser [%s:%s]: %s", os, DOCUMENTATION_URL, err.getMessage()),
+                    "Helpless",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
         }
     }
 
-    public static void shutdownExecutor(ExecutorService executor) {
-        executor.shutdown();
-        try {
-            boolean completed;
-            int attempts = 2;
-            do {
-                completed = executor.awaitTermination(200L, TimeUnit.MILLISECONDS);
-            } while (!completed && attempts-- > 0);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    //@formatting:off
     public enum Icon {
         // https://p.yusukekamiyamane.com/
         // 16x16 icons
@@ -582,12 +474,118 @@ public final class GTk {
                     ICON_MAP.put(iconName, icon = new ImageIcon(TK.getImage(url)));
                 }
             } catch (Throwable err) {
-                LOG.error().$("Icon not available [resource=").$(resource).$(", e=").$(err.getMessage()).I$();
+                LOG.error()
+                        .$("Icon not available [resource=").$(resource)
+                        .$(", e=").$(err.getMessage())
+                        .I$();
             }
             return icon;
         }
     }
-    //@formatting:on
+
+    public static final class Editor {
+        public static final Color ERROR_FOREGROUND_COLOR = new Color(255, 55, 5);
+        public static final Color MENU_FOREGROUND_COLOR = new Color(15, 205, 150);
+        public static final Color NORMAL_FOREGROUND_COLOR = new Color(180, 255, 210);
+        public static final Color KEYWORD_FOREGROUND_COLOR = new Color(15, 255, 150);
+        public static final Color FUNCTION_FOREGROUND_COLOR = new Color(0, 255, 4, 92);
+        public static final Color TYPE_FOREGROUND_COLOR = new Color(243, 156, 18);
+        public static final Color LINENO_COLOR = Color.LIGHT_GRAY.darker().darker();
+        public static final Color MATCH_FOREGROUND_COLOR = new Color(250, 255, 116);
+        public static final Color PLOT_BORDER_COLOR = new Color(153, 153, 153);
+        public static final int DEFAULT_FONT_SIZE = 15;
+        public static final int MIN_FONT_SIZE = 11;
+        public static final int MAX_FONT_SIZE = 21;
+        public static final Font DEFAULT_FONT = new Font(MAIN_FONT_NAME, Font.BOLD, DEFAULT_FONT_SIZE);
+
+        public static Font newFont(int newFontSize) {
+            return new Font(MAIN_FONT_NAME, Font.BOLD, newFontSize);
+        }
+    }
+
+    public static final class Keyboard {
+        public static final int CMD_DOWN_MASK = isMac() ? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK;
+        public static final int CMD_SHIFT_DOWN_MASK = CMD_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+        public static final int ALT_DOWN_MASK = InputEvent.ALT_DOWN_MASK;
+        public static final int ALT_SHIFT_DOWN_MASK = ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+        public static final int NO_KEY_EVENT = -1;
+
+        public static void addCmdKeyAction(int keyEvent, JComponent component, ActionListener action) {
+            addAction(CMD_DOWN_MASK, keyEvent, component, action);
+        }
+
+        public static void addCmdShiftKeyAction(int keyEvent, JComponent component, ActionListener action) {
+            addAction(CMD_SHIFT_DOWN_MASK, keyEvent, component, action);
+        }
+
+        public static void addAltKeyAction(int keyEvent, JComponent component, ActionListener action) {
+            addAction(ALT_DOWN_MASK, keyEvent, component, action);
+        }
+
+        public static void addAltShiftKeyAction(int keyEvent, JComponent component, ActionListener action) {
+            addAction(ALT_SHIFT_DOWN_MASK, keyEvent, component, action);
+        }
+
+        public static void setupTableCmdKeyActions(JTable table) {
+            addCmdKeyAction(KeyEvent.VK_A, table, e -> table.selectAll()); // cmd-a, select all
+            final StringBuilder sb = new StringBuilder();
+            addCmdKeyAction(KeyEvent.VK_C, table, e -> { // cmd-c, copy selection/all to clipboard
+                int[] selectedRows = table.getSelectedRows();
+                int[] selectedCols = table.getSelectedColumns();
+                if (selectedRows.length == 0) {
+                    table.selectAll();
+                    selectedRows = table.getSelectedRows();
+                }
+                int[] widths = new int[selectedCols.length];
+                for (int c = 0; c < selectedCols.length; c++) {
+                    for (int r = 0; r < selectedRows.length; r++) {
+                        int len = table.getValueAt(r, c).toString().length();
+                        if (widths[c] < len) {
+                            widths[c] = len;
+                        }
+                    }
+                }
+                sb.setLength(0);
+                int rowIdx;
+                int colIdx;
+                for (int selectedRow : selectedRows) {
+                    rowIdx = selectedRow;
+                    for (int c = 0; c < selectedCols.length; c++) {
+                        colIdx = selectedCols[c];
+                        if (!table.getColumnName(colIdx).equals(Table.ROWID_COL_NAME)) {
+                            String value = table.getValueAt(rowIdx, colIdx).toString();
+                            int len = value.length();
+                            sb.append(value);
+                            sb.append(" ".repeat(Math.max(0, widths[c] - len)));
+                            sb.append(", ");
+                        }
+                    }
+                    sb.setLength(sb.length() - 2);
+                    sb.append("\n");
+                }
+                if (!sb.isEmpty()) {
+                    sb.setLength(sb.length() - 1); // last \n
+                    setClipboardContent(sb.toString());
+                }
+            });
+        }
+
+        private static void addAction(int mask, int keyEvent, JComponent component, ActionListener action) {
+            Action cmd = action(action);
+            InputMap whenFocused = component.getInputMap(JComponent.WHEN_FOCUSED);
+            whenFocused.put(KeyStroke.getKeyStroke(keyEvent, mask), cmd);
+            component.getActionMap().put(cmd, cmd);
+        }
+
+        private static Action action(ActionListener action) {
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    action.actionPerformed(e);
+                }
+            };
+        }
+    }
 
     private static class UnderlineLabelMouseListener implements NoopMouseListener {
         private final JLabel label;

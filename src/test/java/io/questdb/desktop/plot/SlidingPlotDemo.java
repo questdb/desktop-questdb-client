@@ -25,6 +25,9 @@
 package io.questdb.desktop.plot;
 
 import io.questdb.desktop.GTk;
+import io.questdb.desktop.ui.plotting.Column;
+import io.questdb.desktop.ui.plotting.PlotCanvas;
+import io.questdb.desktop.ui.plotting.SlidingColumn;
 import io.questdb.std.Os;
 
 import javax.swing.*;

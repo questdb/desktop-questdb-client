@@ -22,38 +22,33 @@
  *
  ******************************************************************************/
 
-package io.questdb.desktop.plot;
+package io.questdb.desktop.ui.plotting;
 
+import io.questdb.desktop.ui.EventConsumer;
+import io.questdb.desktop.ui.EventProducer;
 import io.questdb.desktop.GTk;
-import io.questdb.desktop.ui.plotting.BasicColumn;
-import io.questdb.desktop.ui.plotting.Column;
-import io.questdb.desktop.ui.plotting.PlotCanvas;
 
 import javax.swing.*;
 import java.awt.*;
 
+public class Plot extends JDialog implements EventProducer<Plot.EventType> {
 
-public class PlotDemo extends JPanel {
+    private final PlotCanvas canvas;
 
-    public static void main(String[] args) {
-        PlotCanvas plot = new PlotCanvas();
+    public Plot(Frame owner, String title, EventConsumer<Plot, Object> eventConsumer) {
+        super(owner, title);
+        GTk.configureDialog(this, 0.78F, 0.66F, () -> eventConsumer.onSourceEvent(Plot.this, EventType.HIDE_REQUEST, null));
+        Container contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(BorderLayout.CENTER, canvas = new PlotCanvas());
+    }
 
-        Column xValues = new BasicColumn("x");
-        Column yValues = new BasicColumn("y", Color.YELLOW);
-        double angle = 0.0;
-        double step = Math.PI / 180.0;
-        for (int i = 0; i <= 360; i++) {
-            xValues.append(Math.cos(angle));
-            yValues.append(Math.sin(angle));
-            angle += step;
-        }
-        plot.setDataSet("Circle in steps of π/4", xValues, yValues);
+    public void setDataSet(Column x, Column y) {
+        canvas.setDataSet(null, x, y);
+    }
 
-        JFrame frame = GTk.frame("Plot");
-        Dimension size = GTk.frameDimension(7.0F, 7.0F);
-        frame.add(plot, BorderLayout.CENTER);
-        Dimension location = GTk.frameLocation(size);
-        frame.setLocation(location.width, location.height);
-        frame.setVisible(true);
+
+    public enum EventType {
+        HIDE_REQUEST // Request to hide the metadata files explorer
     }
 }
