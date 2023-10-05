@@ -17,7 +17,6 @@ import io.questdb.desktop.GTk;
 import io.questdb.desktop.model.DbConn;
 import io.questdb.desktop.model.SQLExecutionRequest;
 import io.questdb.desktop.model.Store;
-import io.questdb.desktop.model.StoreEntry;
 import io.questdb.desktop.ui.EventConsumer;
 import io.questdb.desktop.ui.EventProducer;
 import io.questdb.desktop.ui.connectivity.Conns;
@@ -29,11 +28,11 @@ import static io.questdb.desktop.GTk.flowPanel;
 import static io.questdb.desktop.GTk.gap;
 import static io.questdb.desktop.GTk.label;
 
-public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.EventType>, Closeable {
+public class MainEditor extends Editor implements EventProducer<MainEditor.EventType>, Closeable {
 
     private static final int COMPONENT_HEIGHT = 33;
     private static final String STORE_FILE_NAME = "default-notebook.json";
-    private final EventConsumer<QuestsEditor, SQLExecutionRequest> eventConsumer;
+    private final EventConsumer<MainEditor, SQLExecutionRequest> eventConsumer;
     private final JComboBox<String> questEntryNames;
     private final List<UndoManager> undoManagers;
     private final JLabel questLabel;
@@ -47,7 +46,7 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
     private SQLExecutionRequest lastRequest;
     private Content content;
 
-    public QuestsEditor(EventConsumer<QuestsEditor, SQLExecutionRequest> eventConsumer) {
+    public MainEditor(EventConsumer<MainEditor, SQLExecutionRequest> eventConsumer) {
         super();
         this.eventConsumer = eventConsumer;
         undoManagers = new ArrayList<>(5);
@@ -82,7 +81,7 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
                 questEntryNames,
                 gap(12),
                 connLabel = label(Icon.NO_ICON, null, e -> eventConsumer.onSourceEvent(
-                        QuestsEditor.this,
+                        MainEditor.this,
                         EventType.CONNECTION_STATUS_CLICKED,
                         null)));
         questLabel.setForeground(Color.WHITE);
@@ -114,6 +113,15 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
         add(topPanel, BorderLayout.NORTH);
         loadStoreEntries(STORE_FILE_NAME);
         refreshConnLabel();
+    }
+
+    private static JFileChooser createChooser(String title, int dialogType) {
+        JFileChooser choose = new JFileChooser(Store.ROOT_PATH);
+        choose.setDialogTitle(title);
+        choose.setDialogType(dialogType);
+        choose.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        choose.setMultiSelectionEnabled(false);
+        return choose;
     }
 
     public void setFontSize(int size) {
@@ -286,11 +294,7 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
     }
 
     private void onBackupQuests(ActionEvent event) {
-        JFileChooser choose = new JFileChooser(Store.ROOT_PATH);
-        choose.setDialogTitle("Backing up quests");
-        choose.setDialogType(JFileChooser.SAVE_DIALOG);
-        choose.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        choose.setMultiSelectionEnabled(false);
+        JFileChooser choose = createChooser("Backing up quests", JFileChooser.SAVE_DIALOG);
         if (JFileChooser.APPROVE_OPTION == choose.showSaveDialog(this)) {
             File selectedFile = choose.getSelectedFile();
             try {
@@ -301,8 +305,8 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
                             this,
                             "Override file?",
                             "Dilemma",
-                            JOptionPane.YES_NO_OPTION)
-                    ) {
+                            JOptionPane.YES_NO_OPTION
+                    )) {
                         store.saveToFile(selectedFile);
                     }
                 }
@@ -311,17 +315,14 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
                         this,
                         String.format("Could not save file '%s': %s", selectedFile.getAbsolutePath(), t.getMessage()),
                         "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
 
     private void onLoadQuestsFromBackup(ActionEvent event) {
-        JFileChooser choose = new JFileChooser(Store.ROOT_PATH);
-        choose.setDialogTitle("Loading quests from backup");
-        choose.setDialogType(JFileChooser.OPEN_DIALOG);
-        choose.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        choose.setMultiSelectionEnabled(false);
+        JFileChooser choose = createChooser("Loading quests from backup", JFileChooser.OPEN_DIALOG);
         choose.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
@@ -417,16 +418,16 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
 
     private JMenu createQuestsMenu() {
         final JMenu questsMenu = menu(Icon.QUESTDB, "uest");
-        questsMenu.add(menuItem(Icon.COMMAND_ADD, "New", GTk.Keyboard.NO_KEY_EVENT, this::onCreateQuest));
-        questsMenu.add(menuItem(Icon.COMMAND_EDIT, "Rename", GTk.Keyboard.NO_KEY_EVENT, this::onRenameQuest));
-        questsMenu.add(menuItem(Icon.COMMAND_REMOVE, "Delete", GTk.Keyboard.NO_KEY_EVENT, this::onDeleteQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_ADD, "New", this::onCreateQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_EDIT, "Rename", this::onRenameQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_REMOVE, "Delete", this::onDeleteQuest));
         questsMenu.addSeparator();
-        questsMenu.add(menuItem(Icon.COMMAND_CLEAR, "Clear", GTk.Keyboard.NO_KEY_EVENT, this::onClearQuest));
-        questsMenu.add(menuItem(Icon.COMMAND_RELOAD, "Reload", "Recovers quest from last save", GTk.Keyboard.NO_KEY_EVENT, this::onReloadQuest));
-        questsMenu.add(menuItem(Icon.COMMAND_SAVE, "Save", GTk.Keyboard.NO_KEY_EVENT, this::onSaveQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_CLEAR, "Clear", this::onClearQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_RELOAD, "Reload", this::onReloadQuest));
+        questsMenu.add(menuItem(Icon.COMMAND_SAVE, "Save", this::onSaveQuest));
         questsMenu.addSeparator();
-        questsMenu.add(menuItem(Icon.COMMAND_STORE_LOAD, "Read from notebook", GTk.Keyboard.NO_KEY_EVENT, this::onLoadQuestsFromBackup));
-        questsMenu.add(menuItem(Icon.COMMAND_STORE_BACKUP, "Write to new notebook", GTk.Keyboard.NO_KEY_EVENT, this::onBackupQuests));
+        questsMenu.add(menuItem(Icon.COMMAND_STORE_LOAD, "Read from notebook", this::onLoadQuestsFromBackup));
+        questsMenu.add(menuItem(Icon.COMMAND_STORE_BACKUP, "Write to new notebook", this::onBackupQuests));
         questsMenu.addSeparator();
         questsMenu.add(fontSizeLabel);
         questsMenu.add(fontSizeSlider);
@@ -435,36 +436,5 @@ public class QuestsEditor extends Editor implements EventProducer<QuestsEditor.E
 
     public enum EventType {
         COMMAND_AVAILABLE, COMMAND_CANCEL, CONNECTION_STATUS_CLICKED
-    }
-
-    public static class Content extends StoreEntry {
-        private static final String ATTR_NAME = "content";
-
-        public Content() {
-            this("default");
-        }
-
-        public Content(String name) {
-            super(name);
-            setAttr(ATTR_NAME, GTk.BANNER);
-        }
-
-        @SuppressWarnings("unused")
-        public Content(StoreEntry other) {
-            super(other);
-        }
-
-        @Override
-        public final String getUniqueId() {
-            return getName();
-        }
-
-        public String getContent() {
-            return getAttr(ATTR_NAME);
-        }
-
-        public void setContent(String content) {
-            setAttr(ATTR_NAME, content);
-        }
     }
 }

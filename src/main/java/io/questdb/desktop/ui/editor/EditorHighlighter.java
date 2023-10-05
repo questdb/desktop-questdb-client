@@ -54,7 +54,10 @@ public class EditorHighlighter extends DocumentFilter {
         GTk.Editor.ERROR_FOREGROUND_COLOR.getGreen(),
         GTk.Editor.ERROR_FOREGROUND_COLOR.getBlue());
     private static final Pattern COMMENT_PATTERN = Pattern.compile("--[^\n]*\n?", PATTERN_FLAGS);
-    private static final Pattern STATIC_PATTERN = Pattern.compile("\\+|\\-|\\*|/|%|:|;|&|\\||~|!|\\^|=|>|<|\\.|,|\\\\|\\(|\\)|\\[|\\]|\\{|\\}|'|\"", PATTERN_FLAGS);
+    private static final Pattern STATIC_PATTERN = Pattern.compile(
+            "\\+|\\-|\\*|/|%|:|;|&|\\||~|!|\\^|=|>|<|\\.|,|\\\\|\\(|\\)|\\[|\\]|\\{|\\}|'|\"",
+            PATTERN_FLAGS
+    );
     private static final Pattern KEYWORDS_PATTERN;
     private static final Pattern TYPES_PATTERN;
     private static final Pattern FUNCTION_NAMES_PATTERN;
@@ -116,7 +119,9 @@ public class EditorHighlighter extends DocumentFilter {
 
         // types
         names.clear();
-        final Set<String> skipSet = Set.of("unknown", "regclass", "regprocedure", "VARARG", "text[]", "CURSOR", "RECORD", "PARAMETER");
+        final Set<String> skipSet = Set.of(
+                "unknown", "regclass", "regprocedure", "VARARG", "text[]", "CURSOR", "RECORD", "PARAMETER"
+        );
         for (int type = 1; type < ColumnType.MAX; type++) {
             String name = ColumnType.nameOf(type);
             if (!skipSet.contains(name)) {

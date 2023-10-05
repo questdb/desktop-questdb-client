@@ -309,6 +309,10 @@ public final class GTk {
         return menuItem(new JMenuItem(), icon, title, null, keyEvent, listener);
     }
 
+    public static JMenuItem menuItem(Icon icon, String title, ActionListener listener) {
+        return menuItem(new JMenuItem(), icon, title, null, Keyboard.NO_KEY_EVENT, listener);
+    }
+
     public static JMenuItem menuItem(Icon icon, String title, String tooltip, int keyEvent, ActionListener listener) {
         return menuItem(new JMenuItem(), icon, title, tooltip, keyEvent, listener);
     }

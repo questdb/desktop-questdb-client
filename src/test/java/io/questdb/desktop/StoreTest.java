@@ -32,7 +32,7 @@ import java.io.File;
 import io.questdb.desktop.model.DbConnProperties;
 import io.questdb.desktop.model.Store;
 import io.questdb.desktop.model.StoreEntry;
-import io.questdb.desktop.ui.editor.QuestsEditor;
+import io.questdb.desktop.ui.editor.Content;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -86,14 +86,14 @@ public class StoreTest {
     public void test_persist_load_Content() {
         String fileName = deleteIfExists("test-command-board-content-persistence.json");
         try {
-            QuestsEditor.Content content = new QuestsEditor.Content();
+            Content content = new Content();
             content.setContent("Audentes fortuna  iuvat");
-            try (Store<QuestsEditor.Content> store = new TStore<>(fileName, QuestsEditor.Content.class)) {
+            try (Store<Content> store = new TStore<>(fileName, Content.class)) {
                 store.addEntry(content);
             }
 
-            QuestsEditor.Content rcontent;
-            try (Store<QuestsEditor.Content> store = new TStore<>(fileName, QuestsEditor.Content.class)) {
+            Content rcontent;
+            try (Store<Content> store = new TStore<>(fileName, Content.class)) {
                 store.loadFromFile();
                 assertThat(store.size(), is(1));
                 rcontent = store.entries().get(0);

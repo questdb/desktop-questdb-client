@@ -1,27 +1,3 @@
-/*******************************************************************************
- *     ___                  _   ____  ____
- *    / _ \ _   _  ___  ___| |_|  _ \| __ )
- *   | | | | | | |/ _ \/ __| __| | | |  _ \
- *   | |_| | |_| |  __/\__ \ |_| |_| | |_) |
- *    \__\_\\__,_|\___||___/\__|____/|____/
- *
- *  Copyright (c) 2014-2019 Appsicle
- *  Copyright (c) 2019-2023 QuestDB
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
-
 package io.questdb.desktop;
 
 import java.awt.*;
@@ -44,21 +20,19 @@ import io.questdb.desktop.model.SQLType;
 import io.questdb.desktop.model.Store;
 import io.questdb.ServerMain;
 import io.questdb.desktop.ui.connectivity.Conns;
-import io.questdb.desktop.ui.editor.QuestsEditor;
+import io.questdb.desktop.ui.editor.MainEditor;
 import io.questdb.desktop.ui.EventProducer;
 import io.questdb.desktop.ui.results.SQLResultsTable;
 import io.questdb.log.Log;
 import io.questdb.log.LogFactory;
 import io.questdb.std.Misc;
 
-import static io.questdb.desktop.GTk.menuItem;
-
 
 public final class Main {
     private static final Log LOG = LogFactory.getLog(Main.class);
 
     private final JFrame frame;
-    private final QuestsEditor commands;
+    private final MainEditor commands;
     private final Conns conns;
     private final SQLResultsTable results;
     private final SQLExecutor executor;
@@ -79,7 +53,7 @@ public final class Main {
         meta = new Metadata(frame, "Metadata Files", this::dispatchEvent);
         plot = new Plot(frame, "Plot", this::dispatchEvent);
         conns = new Conns(frame, this::dispatchEvent);
-        commands = new QuestsEditor(this::dispatchEvent);
+        commands = new MainEditor(this::dispatchEvent);
         commands.setPreferredSize(new Dimension(0, dividerHeight));
         results = new SQLResultsTable(frame.getWidth(), dividerHeight);
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, commands, results);
@@ -191,8 +165,8 @@ public final class Main {
                 return;
             }
             plot.setDataSet(
-                new TableColumn("x", table, 1, Color.WHITE),
-                new TableColumn("y", table, 2, GTk.Editor.MATCH_FOREGROUND_COLOR)
+                    new TableColumn("x", table, 1, Color.WHITE),
+                    new TableColumn("y", table, 2, GTk.Editor.MATCH_FOREGROUND_COLOR)
             );
             plot.setVisible(true);
             togglePlot.setText("Close Plot");
@@ -214,10 +188,10 @@ public final class Main {
             }
         } else {
             if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
-                frame,
-                "Shutdown QuestDB?",
-                "Choice",
-                JOptionPane.YES_NO_OPTION)
+                    frame,
+                    "Shutdown QuestDB?",
+                    "Choice",
+                    JOptionPane.YES_NO_OPTION)
             ) {
                 questDb.close();
                 questDb = null;
@@ -230,7 +204,7 @@ public final class Main {
 
     private void dispatchEvent(EventProducer<?> source, Enum<?> event, Object data) {
         GTk.invokeLater(() -> {
-            if (source instanceof QuestsEditor) {
+            if (source instanceof MainEditor) {
                 onCommandEvent(EventProducer.eventType(event), (SQLExecutionRequest) data);
             } else if (source instanceof SQLExecutor) {
                 onSQLExecutorEvent(EventProducer.eventType(event), (SQLExecutionResponse) data);
@@ -244,7 +218,7 @@ public final class Main {
         });
     }
 
-    private void onCommandEvent(QuestsEditor.EventType event, SQLExecutionRequest req) {
+    private void onCommandEvent(MainEditor.EventType event, SQLExecutionRequest req) {
         switch (event) {
             case COMMAND_AVAILABLE -> {
                 DbConn conn = commands.getConnection();
